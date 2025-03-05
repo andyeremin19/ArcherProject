@@ -9,19 +9,32 @@ ABow::ABow()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	RootComponent = SceneComponent;
+
+	BowMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("BowMesh"));
+	BowMesh->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
 void ABow::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
 void ABow::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
 
+EBowState ABow::GetBowState()
+{
+	return BowState;
+}
+
+void ABow::SetBowState(EBowState NewState)
+{
+	BowState = NewState;
 }
 
