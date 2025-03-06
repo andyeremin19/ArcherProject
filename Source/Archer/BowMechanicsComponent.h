@@ -8,6 +8,9 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAimBegin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAimEnd);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDrawEnd);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDrawOngoing, float, MaxDrawTime, float, DrawTime);
+
 
 class ABow;
 class AArrow;
@@ -26,9 +29,12 @@ public:
 	FTimerHandle TimerHandle_Drawing;
 
 	//Delegates
+
 	FOnMontageEnded OnFireMontageEnd;
 	FOnAimBegin OnAimBegin;
 	FOnAimEnd OnAimEnd;
+	FOnDrawOngoing OnDrawOngoing;
+	FOnAimEnd OnDrawEnd;
 
 	//Variables
 
@@ -72,6 +78,8 @@ private:
 	FRotator InitialRotationRate;
 
 	float DrawTime = 0.0f;
+
+	bool bIsWaitingToDrawBow = false;
 
 protected:
 	// Called when the game starts

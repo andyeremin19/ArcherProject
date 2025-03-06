@@ -120,6 +120,9 @@ private:
 
 	void InitVariables();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void UpdateCameraTransform(FTransform Transform);
+
 	//Changes camera loc&fov 
 	UFUNCTION()
 	void SetCameraByTimeline(float Alpha);

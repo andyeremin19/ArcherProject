@@ -7,7 +7,6 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Camera/CameraComponent.h" // убрать
 
 // Sets default values for this component's properties
 UBowMechanicsComponent::UBowMechanicsComponent()
@@ -52,6 +51,7 @@ void UBowMechanicsComponent::SpawnArrow()
 	if (ArrowType)
 	{
 		FActorSpawnParameters Params;
+		Params.Instigator = Owner;
 		DrawnArrow = GetWorld()->SpawnActor<AArrow>(ArrowType, FVector(0.0, 0.0, 0.0), FRotator(0.0, 0.0, 0.0), Params);
 		DrawnArrow->AttachToComponent(Owner->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("ArrowSocket"));
 	}
@@ -111,7 +111,6 @@ void UBowMechanicsComponent::FireArrowBegin_Implementation(const FVector& Direct
 			OnFireMontageEnd.BindUObject(this, &UBowMechanicsComponent::FireArrowEnd);
 			Owner->GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(OnFireMontageEnd, FireBowMontage);
 		}
-		//FireArrowEnd();
 	}
 }
 
@@ -121,6 +120,10 @@ void UBowMechanicsComponent::FireArrowEnd(UAnimMontage* Montage, bool IsIterrupt
 	if (bIsAiming)
 	{
 		AimBegin();
+		if (bIsWaitingToDrawBow)
+		{
+			DrawBegin();
+		}
 	}
 }
 
@@ -128,9 +131,14 @@ void UBowMechanicsComponent::DrawBegin_Implementation()
 {
 	if (!bIsDrawing && bIsAiming && !bIsFiring)
 	{
+		bIsWaitingToDrawBow = false;
 		bIsDrawing = true;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle_Drawing, this, &UBowMechanicsComponent::IncrementDrawTime, DrawIncrementTime, true);
-		CurrentBow->SetBowState(EBowState::Draw);
+		CurrentBow->DrawBegin();
+	}
+	else
+	{
+		bIsWaitingToDrawBow = true;
 	}
 }
 
@@ -142,14 +150,17 @@ void UBowMechanicsComponent::Server_DrawBegin_Implementation()
 void UBowMechanicsComponent::DrawEnd()
 {
 	bIsDrawing = false;
+	bIsWaitingToDrawBow = false;
 	DrawTime = 0.0f;
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Drawing);
-	CurrentBow->SetBowState(EBowState::Idle);
+	CurrentBow->DrawEnd();
+	OnDrawEnd.Broadcast();
 }
 
 void UBowMechanicsComponent::IncrementDrawTime()
 {
 	DrawTime += DrawIncrementTime;
+	OnDrawOngoing.Broadcast(CurrentBow->GetMaxDrawTime(), DrawTime);
 }
 
 void UBowMechanicsComponent::FireAimedArrow(const FVector& Direction)

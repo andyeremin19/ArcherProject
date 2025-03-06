@@ -2,6 +2,8 @@
 
 
 #include "Bow.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 ABow::ABow()
@@ -43,3 +45,20 @@ float ABow::GetMaxDrawTime()
 	return MaxDrawTime;
 }
 
+void ABow::DrawBegin()
+{
+	BowState = EBowState::Draw;
+	if (DrawSound)
+	{
+		SpawnedDrawSound = UGameplayStatics::SpawnSoundAtLocation(GetWorld(), DrawSound, GetActorLocation());
+	}
+}
+
+void ABow::DrawEnd()
+{
+	BowState = EBowState::Idle;
+	if (SpawnedDrawSound)
+	{
+		SpawnedDrawSound->DestroyComponent();
+	}
+}

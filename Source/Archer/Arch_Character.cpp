@@ -96,6 +96,8 @@ void AArch_Character::FireArrow_Implementation()
 
 void AArch_Character::Server_FireArrow_Implementation()
 {
+	FTransform Transform = Camera->GetComponentTransform();
+	UpdateCameraTransform(Transform);
 	FireArrow();
 }
 
@@ -125,6 +127,14 @@ void AArch_Character::InitVariables()
 {
 	InitialFOV = Camera->FieldOfView;
 	InitialCameraOffset = SpringArm->SocketOffset;
+}
+
+void AArch_Character::UpdateCameraTransform_Implementation(FTransform Transform)
+{
+	if (!IsLocallyControlled())
+	{
+		Camera->SetWorldTransform(Transform);
+	}
 }
 
 void AArch_Character::SetCameraByTimeline(float Alpha)

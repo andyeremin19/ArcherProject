@@ -18,7 +18,17 @@ void AArch_HUD::BindDelegates()
 		BowMechComp = GetOwningPawn()->GetComponentByClass<UBowMechanicsComponent>();
 		BowMechComp->OnAimBegin.AddDynamic(this, &AArch_HUD::ShowCrosshair);
 		BowMechComp->OnAimEnd.AddDynamic(this, &AArch_HUD::HideCrosshair);
+		BowMechComp->OnDrawOngoing.AddDynamic(this, &AArch_HUD::ResizeCrosshair);
+		BowMechComp->OnDrawEnd.AddDynamic(this, &AArch_HUD::ResizeCrosshairToOriginal);
 	}
+}
+
+void AArch_HUD::ResizeCrosshairToOriginal_Implementation()
+{
+}
+
+void AArch_HUD::ResizeCrosshair_Implementation(float MaxDrawTime, float DrawTime)
+{
 }
 
 void AArch_HUD::HideCrosshair_Implementation()

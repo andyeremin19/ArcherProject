@@ -36,5 +36,10 @@ protected:
 
 	void BindDelegates();
 
+	UFUNCTION(BlueprintNativeEvent)
+	void ResizeCrosshair( float MaxDrawTime, float DrawTime);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void ResizeCrosshairToOriginal();
 	
 };
