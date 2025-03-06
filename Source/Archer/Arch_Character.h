@@ -43,6 +43,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Archer|Input")
 	UInputAction* AimAction = nullptr;
 
+	UPROPERTY(EditAnywhere, Category = "Archer|Input")
+	UInputAction* FireAction = nullptr;
+
 private:
 
 	UPROPERTY()
@@ -87,6 +90,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	FVector CalculateAimDirection();
+
 private:
 
 	void SetMappingContext();
@@ -94,6 +99,12 @@ private:
 	void Move(const FInputActionInstance& Instance);
 
 	void LookAround(const FInputActionInstance& Instance);
+
+	UFUNCTION(Server, Unreliable)
+	void Server_FireArrow();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void FireArrow();
 
 	UFUNCTION(Server, Unreliable)
 	void Server_StartAiming();
@@ -107,7 +118,7 @@ private:
 	UFUNCTION(NetMulticast, Unreliable)
 	void EndAiming();
 
-	void InitValues();
+	void InitVariables();
 
 	//Changes camera loc&fov 
 	UFUNCTION()
@@ -115,4 +126,5 @@ private:
 
 	//Adjusts AimTimeline
 	void SetAimTimeline();
+
 };

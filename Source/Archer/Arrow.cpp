@@ -13,6 +13,7 @@ AArrow::AArrow()
 	PrimaryActorTick.bCanEverTick = true;
 
 	CollisionComp = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
+	SetRootComponent(CollisionComp);
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(CollisionComp);
@@ -25,22 +26,22 @@ AArrow::AArrow()
 void AArrow::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
 void AArrow::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-void AArrow::Fire(FVector Direction)
+void AArrow::Fire(FVector Direction, float Strength)
 {
-	FTransform Transform;
-	TSubclassOf<UProjectileMovementComponent> CompType;
-	UProjectileMovementComponent* ProjectileComp = Cast<UProjectileMovementComponent>(AddComponentByClass(CompType, false, Transform, true));
+	const FVector Velocity = FMath::Lerp(MinSpeed, MaxSpeed, Strength) * Direction;
+	UProjectileMovementComponent* ProjectileComp = NewObject<UProjectileMovementComponent>(this);
+	ProjectileComp->RegisterComponent();
 	ProjectileComp->bRotationFollowsVelocity = true;
 	ProjectileComp->ProjectileGravityScale = 0.5f;
+	ProjectileComp->Velocity = Velocity;
+	ProjectileComp->ProjectileGravityScale = FMath::Lerp(MaxGravity, MinGravity, Strength);
 }
 

@@ -38,3 +38,8 @@ void ABow::SetBowState(EBowState NewState)
 	BowState = NewState;
 }
 
+float ABow::GetMaxDrawTime()
+{
+	return MaxDrawTime;
+}
+

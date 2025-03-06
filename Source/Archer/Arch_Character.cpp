@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "BowMechanicsComponent.h"
+#include "Arrow.h"
 
 // Sets default values
 AArch_Character::AArch_Character()
@@ -30,7 +31,7 @@ AArch_Character::AArch_Character()
 void AArch_Character::BeginPlay()
 {
 	Super::BeginPlay();
-	InitValues();
+	InitVariables();
 	SetAimTimeline();
 }
 
@@ -51,6 +52,8 @@ void AArch_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AArch_Character::Move);
 	Input->BindAction(AimAction, ETriggerEvent::Started, this, &AArch_Character::Server_StartAiming);
 	Input->BindAction(AimAction, ETriggerEvent::Triggered, this, &AArch_Character::Server_EndAiming);
+	Input->BindAction(FireAction, ETriggerEvent::Started, BowMechComp, &UBowMechanicsComponent::Server_DrawBegin);
+	Input->BindAction(FireAction, ETriggerEvent::Triggered, this, &AArch_Character::Server_FireArrow);
 }
 
 void AArch_Character::SetMappingContext()
@@ -86,6 +89,16 @@ void AArch_Character::LookAround(const FInputActionInstance& Instance)
 	AddControllerPitchInput(Vector2D.Y);
 }
 
+void AArch_Character::FireArrow_Implementation()
+{
+	BowMechComp->FireArrowBegin(CalculateAimDirection());
+}
+
+void AArch_Character::Server_FireArrow_Implementation()
+{
+	FireArrow();
+}
+
 void AArch_Character::Server_StartAiming_Implementation()
 {
 	StartAiming();
@@ -108,7 +121,7 @@ void AArch_Character::EndAiming_Implementation()
 	BowMechComp->AimEnd();
 }
 
-void AArch_Character::InitValues()
+void AArch_Character::InitVariables()
 {
 	InitialFOV = Camera->FieldOfView;
 	InitialCameraOffset = SpringArm->SocketOffset;
@@ -128,5 +141,26 @@ void AArch_Character::SetAimTimeline()
 		AimTimeline->AddInterpFloat(AimingCurve, OnAimTimeline);
 		AimTimeline->SetIgnoreTimeDilation(false);
 	}
+}
+
+FVector AArch_Character::CalculateAimDirection()
+{
+	FVector Direction;
+	const FVector Start = Camera->GetComponentLocation();
+	const FVector End = (Camera->GetForwardVector() * 10000.f) + Camera->GetComponentLocation();
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_Visibility);
+	if (BowMechComp->GetDrawnArrow())
+	{
+		if (Hit.bBlockingHit)
+		{
+			Direction = (Hit.Location - BowMechComp->GetDrawnArrow()->GetActorLocation()).GetSafeNormal();
+		}
+		else
+		{
+			Direction = (Hit.TraceEnd - BowMechComp->GetDrawnArrow()->GetActorLocation()).GetSafeNormal();
+		}
+	}
+	return Direction;
 }
 

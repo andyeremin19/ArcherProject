@@ -31,6 +31,22 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UCameraComponent* Camera = nullptr;
 
+	//Variables
+
+protected:
+
+	UPROPERTY(EditAnywhere, Category = "ArrowSettings")
+	float MaxSpeed = 0.0f;
+
+	UPROPERTY(EditAnywhere, Category = "ArrowSettings")
+	float MinSpeed = 0.0f;
+
+	UPROPERTY(EditAnywhere, Category = "ArrowSettings")
+	float MaxGravity = 0.0f;
+
+	UPROPERTY(EditAnywhere, Category = "ArrowSettings")
+	float MinGravity = 0.0f;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -39,6 +55,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void Fire(FVector Direction);
+	void Fire(FVector Direction, float Strength);
 
 };

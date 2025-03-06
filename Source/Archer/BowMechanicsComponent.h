@@ -6,6 +6,9 @@
 #include "Components/ActorComponent.h"
 #include "BowMechanicsComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAimBegin);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAimEnd);
+
 class ABow;
 class AArrow;
 
@@ -18,6 +21,15 @@ public:
 	// Sets default values for this component's properties
 	UBowMechanicsComponent();
 
+	//Timers
+
+	FTimerHandle TimerHandle_Drawing;
+
+	//Delegates
+	FOnMontageEnded OnFireMontageEnd;
+	FOnAimBegin OnAimBegin;
+	FOnAimEnd OnAimEnd;
+
 	//Variables
 
 protected:
@@ -25,11 +37,17 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Bow")
 	TSubclassOf<ABow> BowType;
 
+	UPROPERTY(EditAnywhere, Category = "Bow")
+	UAnimMontage* FireBowMontage = nullptr;
+
 	UPROPERTY(EditAnywhere, Category = "Arrow")
 	TSubclassOf<AArrow> ArrowType;
 
 	UPROPERTY(EditAnywhere, Category = "CameraSettings")
 	FRotator CustomRotationRate;
+
+	UPROPERTY(EditAnywhere, Category = "TimerSettings")
+	float DrawIncrementTime = 0.033f;
 
 private:
 
@@ -47,7 +65,13 @@ private:
 
 	bool bIsAiming = false;
 
+	bool bIsDrawing = false;
+
+	bool bIsFiring = false;
+
 	FRotator InitialRotationRate;
+
+	float DrawTime = 0.0f;
 
 protected:
 	// Called when the game starts
@@ -69,12 +93,33 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool GetIsAiming();
 
+	UFUNCTION(BlueprintPure)
+	bool GetIsDrawing();
+
 	UFUNCTION()
 	void AimBegin();
 
 	UFUNCTION()
 	void AimEnd();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void FireArrowBegin(const FVector& Direction);
+
 	UFUNCTION()
-	void FireArrowBegin();
+	void FireArrowEnd(UAnimMontage* Montage, bool IsIterrupted);
+
+	UFUNCTION(Server, Unreliable)
+	void Server_DrawBegin();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void DrawBegin();
+
+	void DrawEnd();
+
+	void IncrementDrawTime();
+
+	void FireAimedArrow(const FVector& Direction);
+
+	UFUNCTION()
+	AArrow* GetDrawnArrow();
 };

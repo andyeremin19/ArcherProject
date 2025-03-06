@@ -17,6 +17,7 @@ public:
 	ABow();
 
 	//Components
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
@@ -28,6 +29,13 @@ private:
 	USceneComponent* SceneComponent = nullptr;
 
 	EBowState BowState = EBowState::Idle;
+
+	//Variables
+
+private:
+
+	UPROPERTY(EditAnywhere, Category = "BowSettings")
+	float MaxDrawTime = 1.0f;
 
 protected:
 	// Called when the game starts or when spawned
@@ -41,4 +49,6 @@ public:
 	EBowState GetBowState();
 
 	void SetBowState(EBowState NewState);
+
+	float GetMaxDrawTime();
 };
