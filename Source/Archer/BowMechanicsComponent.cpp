@@ -48,7 +48,7 @@ void UBowMechanicsComponent::EquipBow()
 
 void UBowMechanicsComponent::SpawnArrow()
 {
-	if (ArrowType)
+	if (ArrowType && !DrawnArrow)
 	{
 		FActorSpawnParameters Params;
 		Params.Instigator = Owner;
@@ -62,6 +62,7 @@ void UBowMechanicsComponent::DestroyArrow()
 	if (DrawnArrow)
 	{
 		DrawnArrow->Destroy();
+		DrawnArrow = nullptr;
 	}
 }
 
@@ -98,7 +99,7 @@ void UBowMechanicsComponent::AimEnd()
 	OnAimEnd.Broadcast();
 }
 
-void UBowMechanicsComponent::FireArrowBegin_Implementation(const FVector& Direction)
+void UBowMechanicsComponent::FireArrowBegin(const FVector& Direction)
 {
 	if (DrawnArrow && bIsDrawing)
 	{
@@ -168,12 +169,18 @@ void UBowMechanicsComponent::FireAimedArrow(const FVector& Direction)
 	DrawnArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	const float Strength = FMath::Clamp(UKismetMathLibrary::NormalizeToRange(DrawTime, 0.0, CurrentBow->GetMaxDrawTime()), 0.0, 1.0);
 	DrawnArrow->Fire(Direction, Strength);
+	FiredArrow = DrawnArrow;
 	DrawnArrow = nullptr;
 }
 
 AArrow* UBowMechanicsComponent::GetDrawnArrow()
 {
 	return DrawnArrow;
+}
+
+AArrow* UBowMechanicsComponent::GetFiredArrow()
+{
+	return FiredArrow;
 }
 
                                                    

@@ -23,6 +23,7 @@ private:
 	UPROPERTY()
 	UBowMechanicsComponent* BowMechComp = nullptr;
 
+	//Functions
 
 protected:
 	// Called when the game starts or when spawned
@@ -41,5 +42,11 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void ResizeCrosshairToOriginal();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void HideUI();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void ShowUI();
 	
 };

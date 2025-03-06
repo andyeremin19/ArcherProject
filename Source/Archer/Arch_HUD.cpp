@@ -2,12 +2,12 @@
 
 
 #include "Arch_HUD.h"
+#include"Arch_Character.h"
 #include "BowMechanicsComponent.h"
 
 void AArch_HUD::BeginPlay()
 {
 	Super::BeginPlay();
-
 	BindDelegates();
 }
 
@@ -20,7 +20,21 @@ void AArch_HUD::BindDelegates()
 		BowMechComp->OnAimEnd.AddDynamic(this, &AArch_HUD::HideCrosshair);
 		BowMechComp->OnDrawOngoing.AddDynamic(this, &AArch_HUD::ResizeCrosshair);
 		BowMechComp->OnDrawEnd.AddDynamic(this, &AArch_HUD::ResizeCrosshairToOriginal);
+		
+		if (AArch_Character* Char = Cast<AArch_Character>(GetOwningPawn()))
+		{
+			Char->OnCameraSwitchBegin.AddDynamic(this, &AArch_HUD::HideUI);
+			Char->OnCameraSwitchEnd.AddDynamic(this, &AArch_HUD::ShowUI);
+		};
 	}
+}
+
+void AArch_HUD::ShowUI_Implementation()
+{
+}
+
+void AArch_HUD::HideUI_Implementation()
+{
 }
 
 void AArch_HUD::ResizeCrosshairToOriginal_Implementation()

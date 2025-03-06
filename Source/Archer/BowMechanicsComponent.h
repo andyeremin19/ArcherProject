@@ -81,6 +81,8 @@ private:
 
 	bool bIsWaitingToDrawBow = false;
 
+	//Functions
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -110,24 +112,31 @@ public:
 	UFUNCTION()
 	void AimEnd();
 
-	UFUNCTION(NetMulticast, Unreliable)
-	void FireArrowBegin(const FVector& Direction);
-
 	UFUNCTION()
 	void FireArrowEnd(UAnimMontage* Montage, bool IsIterrupted);
-
-	UFUNCTION(Server, Unreliable)
-	void Server_DrawBegin();
-
-	UFUNCTION(NetMulticast, Unreliable)
-	void DrawBegin();
 
 	void DrawEnd();
 
 	void IncrementDrawTime();
 
+	UFUNCTION()
 	void FireAimedArrow(const FVector& Direction);
 
 	UFUNCTION()
 	AArrow* GetDrawnArrow();
+
+	UFUNCTION()
+	AArrow* GetFiredArrow();
+
+	void FireArrowBegin(const FVector& Direction);
+
+	//Server
+
+	UFUNCTION(Server, Unreliable)
+	void Server_DrawBegin();
+
+	//Multicast
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void DrawBegin();
 };

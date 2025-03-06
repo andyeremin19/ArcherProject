@@ -32,7 +32,7 @@ private:
 
 	//Variables
 
-private:
+protected:
 
 	UPROPERTY(EditAnywhere, Category = "BowSettings")
 	float MaxDrawTime = 1.0f;
@@ -42,6 +42,8 @@ private:
 
 	UPROPERTY()
 	UAudioComponent* SpawnedDrawSound = nullptr;
+
+	//Functions
 
 protected:
 	// Called when the game starts or when spawned
@@ -58,8 +60,10 @@ public:
 
 	float GetMaxDrawTime();
 
+	UFUNCTION()
 	void DrawBegin();
 
+	UFUNCTION()
 	void DrawEnd();
 
 };

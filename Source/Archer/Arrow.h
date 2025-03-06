@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include"Components/TimelineComponent.h"
 #include "Arrow.generated.h"
 
 class UBoxComponent;
@@ -11,6 +12,7 @@ class UCameraComponent;
 class UNiagaraSystem;
 class UNiagaraComponent;
 class UProjectileMovementComponent;
+class CurveFloat;
 
 UCLASS()
 class ARCHER_API AArrow : public AActor
@@ -24,6 +26,10 @@ public:
 	//Timers
 
 	FTimerHandle TimerHamdle_DestroyVFX;
+
+	//Delegates
+
+	FOnTimelineFloat OnArrowSpin;
 
 	//Components
 
@@ -41,9 +47,17 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UCameraComponent* Camera = nullptr;
 
+private:
+
+	UPROPERTY()
+	UTimelineComponent* SpinTimeline = nullptr;
+
 	//Variables
 
 protected:
+
+	UPROPERTY(EditAnywhere, Category = "ArrowSettings")
+	UCurveFloat* SpinCurve = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "ArrowSettings")
 	UNiagaraSystem* FlyVFX = nullptr;
@@ -82,11 +96,21 @@ private:
 	UPROPERTY()
 	UNiagaraComponent* SpawnedVFX = nullptr;
 
+	bool bIsStuck = false;
+
+	//Functions
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	
+	UFUNCTION()
 	void DestroySpawnedVFX();
+
+	UFUNCTION()
+	void SpinStart(float Alpha);
+
+	void SetSpinTimeline();
 
 	UFUNCTION()
 	void ArrowBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -94,7 +118,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	
+	UFUNCTION()
 	void Fire(FVector Direction, float Strength);
 
+	bool GetbIsStuck();
 };

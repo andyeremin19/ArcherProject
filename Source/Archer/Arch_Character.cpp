@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "BowMechanicsComponent.h"
 #include "Arrow.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AArch_Character::AArch_Character()
@@ -35,6 +36,25 @@ void AArch_Character::BeginPlay()
 	SetAimTimeline();
 }
 
+void AArch_Character::SwitchToArrow()
+{
+	//UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.3f);  Skipped it for the multiplayer
+	if (BowMechComp->GetFiredArrow() && !BowMechComp->GetFiredArrow()->GetbIsStuck())
+	{
+		OnCameraSwitchBegin.Broadcast();
+		APlayerController* MyController = Cast<APlayerController>(GetController());
+		MyController->SetViewTargetWithBlend(BowMechComp->GetFiredArrow());
+	}
+}
+
+void AArch_Character::SwitchToChar()
+{
+	//UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.3f); Skipped it for the multiplayer
+	OnCameraSwitchEnd.Broadcast();
+	APlayerController* MyController = Cast<APlayerController>(GetController());
+	MyController->SetViewTargetWithBlend(this);
+}
+
 // Called every frame
 void AArch_Character::Tick(float DeltaTime)
 {
@@ -54,6 +74,8 @@ void AArch_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	Input->BindAction(AimAction, ETriggerEvent::Triggered, this, &AArch_Character::Server_EndAiming);
 	Input->BindAction(FireAction, ETriggerEvent::Started, BowMechComp, &UBowMechanicsComponent::Server_DrawBegin);
 	Input->BindAction(FireAction, ETriggerEvent::Triggered, this, &AArch_Character::Server_FireArrow);
+	Input->BindAction(SwitchCameraAction, ETriggerEvent::Started, this, &AArch_Character::SwitchToArrow);
+	Input->BindAction(SwitchCameraAction, ETriggerEvent::Triggered, this, &AArch_Character::SwitchToChar);
 }
 
 void AArch_Character::SetMappingContext()

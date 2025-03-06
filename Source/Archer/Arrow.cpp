@@ -26,6 +26,8 @@ AArrow::AArrow()
 
 	Trail = CreateDefaultSubobject<USceneComponent>(TEXT("Trail"));
 	Trail->SetupAttachment(Mesh);
+
+	SpinTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SpinTimeline"));
 }
 
 // Called when the game starts or when spawned
@@ -33,6 +35,7 @@ void AArrow::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SetSpinTimeline();
 	CollisionComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AArrow::ArrowBeginOverlap);
 }
@@ -45,6 +48,23 @@ void AArrow::DestroySpawnedVFX()
 	}
 }
 
+void AArrow::SpinStart(float Alpha)
+{
+	FRotator Rotation(0.0, 0.0, Alpha);
+	Mesh->SetRelativeRotation(Rotation);
+}
+
+void AArrow::SetSpinTimeline()
+{
+	OnArrowSpin.BindUFunction(this, TEXT("SpinStart"));
+	if (SpinCurve)
+	{
+		SpinTimeline->AddInterpFloat(SpinCurve, OnArrowSpin);
+		SpinTimeline->SetIgnoreTimeDilation(false);
+		SpinTimeline->SetLooping(true);
+	}
+}
+
 void AArrow::ArrowBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (GetInstigator() != OtherActor)
@@ -54,6 +74,7 @@ void AArrow::ArrowBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 			ProjectileComp->DestroyComponent();
 		}
 		CollisionComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		SpinTimeline->Stop();
 		AttachToComponent(SweepResult.GetComponent(), FAttachmentTransformRules::KeepWorldTransform, TEXT("None"));
 		if (HitSound)
 		{
@@ -68,6 +89,7 @@ void AArrow::ArrowBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 			FTransform Transform;
 			Transform.SetLocation(SweepResult.Location);
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitVFX, Transform);
+			bIsStuck = true;
 		}
 		GetWorld()->GetTimerManager().SetTimer(TimerHamdle_DestroyVFX, this, &AArrow::DestroySpawnedVFX, 1.0f);
 	}
@@ -100,5 +122,11 @@ void AArrow::Fire(FVector Direction, float Strength)
 		SpawnedVFX = UNiagaraFunctionLibrary::SpawnSystemAttached(FlyVFX, Trail, "None", Location, Rotation, EAttachLocation::KeepRelativeOffset, false);
 	}
 	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SpinTimeline->PlayFromStart();
+}
+
+bool AArrow::GetbIsStuck()
+{
+	return bIsStuck;
 }
 
